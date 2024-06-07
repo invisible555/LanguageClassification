@@ -19,8 +19,8 @@ def save_audio_to_png_gray_scale_from_directory(folder_name, folder_output, file
         filepath_full = os.path.join(folder_name, filename)
         y, sr = librosa.load(filepath_full)
         S_DB = create_spectrogram(y,sr)
-        S_DB = 255 - S_DB
-        img = scale_minmax(S_DB, 0, 255).astype(np.uint8)
+        img = 255 - S_DB
+        img = scale_minmax(img, 0, 255).astype(np.uint8)
         img = np.flip(img, axis=0) 
         output_filepath = os.path.join(folder_output, filename + ".png")
         skimage.io.imsave(output_filepath, img)
