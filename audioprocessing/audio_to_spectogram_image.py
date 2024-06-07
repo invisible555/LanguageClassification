@@ -38,16 +38,17 @@ def save_audio_to_png_from_directory(folder_name, folder_output, filenames):
         plt.close()
 
 
-'''
+
 def audio_to_png_gray_scale(audio_filepath):
     y, sr = librosa.load(audio_filepath)
     S_DB = create_spectrogram(y, sr)
-    img = 255 - img  
+ 
     img = scale_minmax(S_DB, 0, 255).astype(np.uint8)
     img = np.flip(img, axis=0)  
+    img = 255 - img 
     img_resized = skimage.transform.resize(img, (216, 128), anti_aliasing=True)
     img = np.expand_dims(img_resized, axis=-1)
     img = np.expand_dims(img, axis=0)
     return img
 
-'''
+
