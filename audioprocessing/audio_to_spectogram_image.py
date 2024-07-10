@@ -1,5 +1,4 @@
 import librosa
-import matplotlib.pyplot as plt
 import skimage.io
 import os
 import numpy as np
@@ -14,43 +13,37 @@ def create_spectrogram(y,sr):
     S_DB = librosa.power_to_db(S, ref=np.min)
     return S_DB
 
-def save_audio_to_png_gray_scale_from_directory(folder_name, folder_output, filenames):
-    for filename in filenames:  
+
+def save_segment_to_directory_gray_scale(folder_name, folder_output, segment_length=5):
+    licznik = 0
+    for filename in os.listdir(folder_name):
         filepath_full = os.path.join(folder_name, filename)
-        y, sr = librosa.load(filepath_full)
-        S_DB = create_spectrogram(y,sr)
-        
-        img = scale_minmax(S_DB, 0, 255).astype(np.uint8)
-        img = 255 - img
-        img = np.flip(img, axis=0) 
-        output_filepath = os.path.join(folder_output, filename + ".png")
-        skimage.io.imsave(output_filepath, img)
+        if os.path.isfile(filepath_full):
+            y, sr = librosa.load(filepath_full, sr=22050)
+            segment_length_samples = segment_length * sr
+            total_length_samples = len(y)
+            if total_length_samples < segment_length_samples:
+                pass
+                # print(f"Plik {filename} jest za krótki i został pominięty.")
+            else:
+                segments = []
+                for i in range(0, total_length_samples, sr):  # Przesunięcie o 1 sekundę (sr próbek)
+                    if i + segment_length_samples <= total_length_samples:
+                        segment = y[i:i + segment_length_samples]
+                        segments.append(segment)
+                    else:
+                        break  # Zapewnia, że nie wyjdziemy poza zakres
+                for segment in segments:
+                    spectrogram = create_spectrogram(segment, sr)
+                    img = scale_minmax(spectrogram, 0, 255).astype(np.uint8)
+                    img = 255 - img
+                    filename_without_extension = os.path.splitext(filename)[0]
+                    output_filepath = os.path.join(folder_output, f"{filename_without_extension}_{licznik}.png")
+                    skimage.io.imsave(output_filepath, img)
+                    licznik += 1
 
 
 
-
-def save_audio_to_png_from_directory(folder_name, folder_output, filenames):
-    for filename in filenames:  
-        filepath_full = os.path.join(folder_name, filename)
-        y, sr = librosa.load(filepath_full)
-        S_DB = create_spectrogram(y,sr)
-        librosa.display.specshow(S_DB, sr=sr)
-        plt.savefig(os.path.join(folder_output, os.path.splitext(filename)[0] + ".png"))
-        plt.close()
-
-
-
-def audio_to_png_gray_scale(audio_filepath):
-    y, sr = librosa.load(audio_filepath)
-    S_DB = create_spectrogram(y, sr)
-
-    img = scale_minmax(S_DB, 0, 255).astype(np.uint8)
-    img = 255 - img  
-    img = np.flip(img, axis=0)  
-    img_resized = skimage.transform.resize(img, (216, 128), anti_aliasing=True)
-    img = np.expand_dims(img_resized, axis=-1)
-    img = np.expand_dims(img, axis=0)
-    return img
 
 if __name__ == "__main__":
     pass
